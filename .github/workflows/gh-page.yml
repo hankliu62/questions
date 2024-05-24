@@ -37,7 +37,8 @@ jobs:
         run: pnpm run lint
       - name: 打包 🏗️
         env:
-          NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: ${{ secrets.NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN }}
+          NEXT_GITHUB_BACKED_TOKEN: ${{ secrets.BACKED_TOKEN }}
+          NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: ${{ secrets.FRONTEND_TOKEN }}
         run: pnpm run build && touch ./out/.nojekyll # run: touch ./out/.nojekyll是因为由于 Jekyll 处理,GitHub 默认不提供_next文件夹,.nojekyll文件阻止了这种情况,
       - name: 部署 🚀
         uses: JamesIves/github-pages-deploy-action@v4
