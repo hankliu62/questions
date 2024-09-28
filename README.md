@@ -35,6 +35,7 @@ pnpm install
 4. 启动项目
 
 ```bash
+# 启动
 pnpm run dev
 ```
 
