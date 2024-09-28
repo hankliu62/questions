@@ -185,7 +185,13 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
                       <div className="flex items-center justify-start">
                         {(issue?.labels || []).map((label) => (
                           <Tag color={`#${label.color}`} key={label.id}>
-                            {label.name}
+                            <span
+                              className={classNames({
+                                'text-black/85': label.color?.toLowerCase() === 'ededed',
+                              })}
+                            >
+                              {label.name}
+                            </span>
                           </Tag>
                         ))}
                       </div>

@@ -196,7 +196,7 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
                         },
                       )}
                     >
-                      {item.title}
+                      {item.title || item.name}
                     </div>
                   </div>
                 ))}
@@ -280,7 +280,13 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
                       <div className="flex items-center justify-start">
                         {item.labels.map((label) => (
                           <Tag color={`#${label.color}`} key={label.id}>
-                            {label.name}
+                            <span
+                              className={classNames({
+                                'text-black/85': label.color?.toLowerCase() === 'ededed',
+                              })}
+                            >
+                              {label.name}
+                            </span>
                           </Tag>
                         ))}
                       </div>
@@ -319,7 +325,10 @@ export async function getStaticProps() {
     // }))
     .map((item) => ({
       ...item,
-      title: item.description ? item.description.replace(/相关$/, '') : '',
+      title:
+        item.description && !/[,，]/.test(item.description)
+          ? item.description.replace(/相关$/, '').replace(/有关$/, '')
+          : item.name,
     }))
     .sort((pre, next) => {
       return (
