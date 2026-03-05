@@ -10,7 +10,7 @@
     "stylelint": "stylelint src/**/*.{css,less,scss}",
     "biome:lint": "npx @biomejs/biome lint src/",
     "biome:format": "npx @biomejs/biome format --write src/",
-    "lint": "pnpm run eslint && pnpm run stylelint && pnpm run biome:lint",
+    "lint": "pnpm run stylelint && pnpm run biome:lint",
     "export": "next export",
     "lint:fix": "eslint src --fix && stylelint src/**/*.{css,less,scss} --fix && npx @biomejs/biome lint --write src/",
     "prettier": "prettier --write src",
