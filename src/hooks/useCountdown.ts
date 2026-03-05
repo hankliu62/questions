@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * 使用钩子实现倒计时功能。
@@ -17,15 +17,15 @@ const useCountdown = (countdownNumber: number, ms: number = 1000, onEnd: () => v
   const timer = useRef<number>();
 
   // 清除当前的定时器
-  const clearTimer = () => {
-    timer.current && clearInterval(timer.current);
-  };
+  const clearTimer = useCallback(() => {
+    timer.current && clearTimeout(timer.current);
+  }, []);
 
   // 开始倒计时
-  const startCountdown = () => {
+  const startCountdown = useCallback(() => {
     const now = Date.now();
     // 计算实际执行时间
-    const executionTime = now - lastTime.current;
+    const executionTime = now - (lastTime.current || now);
 
     // 补上实际执行时间与预期时间的差值
     const diffTime = executionTime - nextTimeMs.current;
@@ -42,20 +42,24 @@ const useCountdown = (countdownNumber: number, ms: number = 1000, onEnd: () => v
     });
 
     // 定时执行倒计时
-    timer.current = setTimeout(startCountdown, nextTimeMs.current) as unknown as number;
-  };
+    timer.current = setTimeout(
+      startCountdown,
+      Math.max(0, nextTimeMs.current),
+    ) as unknown as number;
+  }, [ms]);
 
   // 在依赖改变时重置倒计时并启动
   useEffect(() => {
     clearTimer();
     setCount(countdownNumber);
     lastTime.current = Date.now();
+    nextTimeMs.current = ms;
     timer.current = setTimeout(startCountdown, ms) as unknown as number;
 
     return () => {
       clearTimer();
     };
-  }, [countdownNumber]);
+  }, [countdownNumber, clearTimer, ms, startCountdown]);
 
   // 当倒计时结束时，调用回调函数并清除定时器
   useEffect(() => {
@@ -63,7 +67,7 @@ const useCountdown = (countdownNumber: number, ms: number = 1000, onEnd: () => v
       clearTimer();
       onEnd();
     }
-  }, [count]);
+  }, [count, clearTimer, onEnd]);
 
   return [count, clearTimer];
 };

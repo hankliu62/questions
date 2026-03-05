@@ -3,7 +3,7 @@ import fetch from 'isomorphic-fetch';
 import { GithubApi, GitHubApiVersion, GithubFrontendToken, GithubOwner } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
 
-const auth = GithubFrontendToken.join('');
+const auth = GithubFrontendToken;
 const DefaultPerPage = 10;
 
 // 缓存的所有问题
@@ -33,7 +33,7 @@ export const fetchIssues = async (
   url += `?creator=${GithubOwner}&per_page=${perPage}&page=${page || 1}`;
 
   for (const key in options) {
-    if (Object.prototype.hasOwnProperty.call(options, key)) {
+    if (Object.hasOwn(options, key)) {
       url += `&${key}=${options[key]}`;
     }
   }
@@ -47,7 +47,7 @@ export const fetchIssues = async (
 };
 
 /**
- * 前端获取所有问题列表
+ * 前端获取所有问题列表（使用搜索API避免分页问题）
  *
  * @param repo
  * @param options
@@ -62,17 +62,23 @@ export const fetchAllIssues = async (
     const issues: IIssue[] = [];
     let page = 1;
     async function loopFetchIssue() {
-      const currentQuestions = await fetchIssues(repo, page, {
-        ...options,
-        perPage: 100,
-      });
-      if (currentQuestions.length > 0) {
-        for (const question of currentQuestions) {
-          issues.push(question);
+      try {
+        const currentQuestions = await fetchIssues(repo, page, {
+          ...options,
+          perPage: 100,
+        });
+        if (currentQuestions.length > 0) {
+          for (const question of currentQuestions) {
+            issues.push(question);
+          }
+          page++;
+          setTimeout(loopFetchIssue, 100);
+        } else {
+          resolve(issues);
         }
-        page++;
-        setTimeout(loopFetchIssue, 100);
-      } else {
+      } catch (error) {
+        // 如果分页失败，返回已获取的数据
+        console.error('fetchAllIssues error:', error);
         resolve(issues);
       }
     }
@@ -100,31 +106,65 @@ export const searchIssues = async (
     return fetchIssues(repo, page, options);
   }
 
-  return new Promise(async (resolve) => {
-    const current = Date.now();
-    const matchCache = current - (lastCacheIssuesTimestamp.get(repo) || 0) < 60 * 1000 * 60;
-    let issues: IIssue[] = [];
-    if (matchCache) {
-      issues = cacheIssues.get(repo);
-    } else {
-      // 问题列表
-      const fetchedIssues: IIssue[] = await fetchAllIssues(repo, options);
-      cacheIssues.set(repo, fetchedIssues);
-      lastCacheIssuesTimestamp.set(repo, current);
-      issues = fetchedIssues;
-    }
+  // 有搜索关键词时，使用 GitHub 搜索 API
+  return new Promise((resolve) => {
+    const fetchSearchIssues = async () => {
+      try {
+        // 构建搜索查询
+        let searchQuery = `repo:${GithubOwner}/${repo}`;
+        if (options.labels) {
+          searchQuery += `+label:"${options.labels}"`;
+        }
+        searchQuery += `+is:issue`;
 
-    resolve(
-      issues
-        .filter((issue) => {
-          return (
-            (issue.title && issue.title.toLowerCase().includes(keyword.toLowerCase())) ||
-            (issue.body && issue.body.toLowerCase().includes(keyword.toLowerCase())) ||
-            issue.labels?.some((label) => label.name.toLowerCase().includes(keyword.toLowerCase()))
-          );
-        })
-        .slice((page - 1) * DefaultPerPage, page * DefaultPerPage),
-    );
+        const url = `${GithubApi}/search/issues?q=${encodeURIComponent(searchQuery)}&per_page=30&page=${page}`;
+
+        const response = await fetch(url, {
+          headers: {
+            'X-GitHub-Api-Version': GitHubApiVersion,
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.items) {
+          resolve(data.items);
+        } else {
+          resolve([]);
+        }
+      } catch (error) {
+        console.error('searchIssues error:', error);
+        // 搜索失败时降级到本地过滤
+        const current = Date.now();
+        const matchCache = current - (lastCacheIssuesTimestamp.get(repo) || 0) < 60 * 1000 * 60;
+        let issues: IIssue[] = [];
+        if (matchCache) {
+          issues = cacheIssues.get(repo);
+        } else {
+          const fetchedIssues: IIssue[] = await fetchAllIssues(repo, options);
+          cacheIssues.set(repo, fetchedIssues);
+          lastCacheIssuesTimestamp.set(repo, current);
+          issues = fetchedIssues;
+        }
+
+        resolve(
+          issues
+            .filter((issue) => {
+              return (
+                issue.title?.toLowerCase().includes(keyword.toLowerCase()) ||
+                issue.body?.toLowerCase().includes(keyword.toLowerCase()) ||
+                issue.labels?.some((label) =>
+                  label.name.toLowerCase().includes(keyword.toLowerCase()),
+                )
+              );
+            })
+            .slice((page - 1) * DefaultPerPage, page * DefaultPerPage),
+        );
+      }
+    };
+
+    fetchSearchIssues();
   });
 };
 
@@ -136,7 +176,7 @@ export const searchIssues = async (
  * @returns
  */
 export const fetchIssue = async (issueNumber: string, repo: string): Promise<IIssue> => {
-  let url = `${GithubApi}/repos/${GithubOwner}/${repo}/issues/${issueNumber}`;
+  const url = `${GithubApi}/repos/${GithubOwner}/${repo}/issues/${issueNumber}`;
 
   return fetch(url, {
     headers: {

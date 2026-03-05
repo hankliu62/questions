@@ -9,6 +9,7 @@ import { Affix, Card, Collapse, Input, List, Rate, Space, Tag, Tooltip } from '@
 import classNames from 'classnames';
 import Dayjs from 'dayjs';
 import type { InferGetStaticPropsType } from 'next';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useState } from 'react';
 
@@ -74,7 +75,7 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
   const [searchKeyWord, setSearchKeyWord] = useState<string>();
 
   // 获取面试题
-  const getIssues = async (curPage: number, keyword?: string, label?: string) => {
+  const getIssues = useCallback(async (curPage: number, keyword?: string, label?: string) => {
     setIsFetching(true);
     if (curPage === 1) {
       setIsEnd(false);
@@ -95,11 +96,11 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
     if (fetchedIssues?.length === 0) {
       setIsEnd(true);
     }
-  };
+  }, []);
 
   useAsyncEffect(async () => {
     getIssues(1, searchKeyWord, router.query.label as string);
-  }, []);
+  }, [getIssues, router.query.label]);
 
   const onChangeLabel = useCallback(
     (label?: ILabel) => {
@@ -117,19 +118,19 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
         query: newQuery,
       });
     },
-    [router, searchKeyWord],
+    [router, searchKeyWord, getIssues],
   );
 
   const onLoadMore = useCallback(() => {
     getIssues(page + 1, searchKeyWord, selectedLabel);
-  }, [page, searchKeyWord, selectedLabel]);
+  }, [page, searchKeyWord, selectedLabel, getIssues]);
 
   const onSearch = useCallback(
     (value) => {
       setSearchKeyWord(value);
       getIssues(1, value, selectedLabel);
     },
-    [selectedLabel],
+    [selectedLabel, getIssues],
   );
 
   return (
@@ -157,8 +158,8 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
                 <span
                   className="cursor-pointer text-base font-bold underline-offset-2 hover:text-[#1171ee] hover:underline"
                   onClick={(e) => {
-                    e?.preventDefault && e.preventDefault();
-                    e?.stopPropagation && e.stopPropagation();
+                    e?.preventDefault?.();
+                    e?.stopPropagation?.();
                     // 清空选择的标签
                     onChangeLabel();
                   }}
@@ -218,12 +219,20 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
               <List.Item
                 key={item.id}
                 className="cursor-pointer rounded-md hover:bg-[#f6f8fa]"
+                extra={
+                  <Link
+                    href={`/${item.number}`}
+                    className="cursor-pointer rounded bg-[#1e80ff] px-3 py-1 text-white hover:bg-[#1171ee]"
+                  >
+                    查看详情
+                  </Link>
+                }
                 actions={[
                   <Space
                     key="list-vertical-id"
                     onClick={(e) => {
-                      e?.stopPropagation && e.stopPropagation();
-                      e?.preventDefault && e.preventDefault();
+                      e?.stopPropagation?.();
+                      e?.preventDefault?.();
                       window.open(
                         `${GithubOrigin}/${GithubOwner}/${GithubInterviewRepo}/issues/${item.number}`,
                         '_blank',
@@ -237,8 +246,8 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
                   <Space
                     key="list-vertical-user"
                     onClick={(e) => {
-                      e?.stopPropagation && e.stopPropagation();
-                      e?.preventDefault && e.preventDefault();
+                      e?.stopPropagation?.();
+                      e?.preventDefault?.();
                       window.open(`${GithubOrigin}/${item.user.login}`, '_blank');
                     }}
                     className="group cursor-pointer"
@@ -259,38 +268,39 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
                   <Space key="list-difficulty">
                     <Tooltip
                       title={`难度: ${
-                        item.milestone?.number ? item.milestone?.number + '颗🌟' : '未设置'
+                        item.milestone?.number ? `${item.milestone?.number}颗🌟` : '未设置'
                       }`}
                     >
                       <Rate defaultValue={item.milestone?.number || 0} disabled />
                     </Tooltip>
                   </Space>,
                 ]}
-                onClick={() => {
-                  router.push({
-                    pathname: `${router.pathname}/${item.number}`.replace(/\/\//g, '/'),
-                  });
-                }}
               >
                 <List.Item.Meta
-                  className="!mb-0"
+                  className="!mb-0 cursor-pointer"
                   title={
-                    <div className="flex items-center justify-start space-x-2">
-                      <div className="issue-title underline-offset-2">{item.title}</div>
-                      <div className="flex items-center justify-start">
-                        {item.labels.map((label) => (
-                          <Tag color={`#${label.color}`} key={label.id}>
-                            <span
-                              className={classNames({
-                                'text-black/85': label.color?.toLowerCase() === 'ededed',
-                              })}
-                            >
-                              {label.name}
-                            </span>
-                          </Tag>
-                        ))}
+                    // 使用 Link 组件包裹标题，提供可靠的导航
+                    <Link
+                      href={`/${item.number}`}
+                      className="issue-title cursor-pointer hover:text-[#1171ee]"
+                    >
+                      <div className="flex items-center justify-start space-x-2">
+                        <div className="issue-title underline-offset-2">{item.title}</div>
+                        <div className="flex items-center justify-start">
+                          {item.labels.map((label) => (
+                            <Tag color={`#${label.color}`} key={label.id}>
+                              <span
+                                className={classNames({
+                                  'text-black/85': label.color?.toLowerCase() === 'ededed',
+                                })}
+                              >
+                                {label.name}
+                              </span>
+                            </Tag>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   }
                 />
                 <div className="truncate empty:hidden">{item.body || ''}</div>

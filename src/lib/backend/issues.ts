@@ -11,7 +11,7 @@ import {
 } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
 
-const auth = GithubBackendToken.join('');
+const auth = GithubBackendToken;
 
 /**
  * 获取面试题详情
@@ -207,7 +207,7 @@ export const fetchIssues = async (repo: string, page: number, options = {}): Pro
   url += `?creator=${GithubOwner}&per_page=10&page=${page || 1}`;
 
   for (const key in options) {
-    if (Object.prototype.hasOwnProperty.call(options, key)) {
+    if (Object.hasOwn(options, key)) {
       url += `&${key}=${options[key]}`;
     }
   }

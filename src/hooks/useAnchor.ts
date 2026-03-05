@@ -8,16 +8,18 @@ export default function useAnchor(menus: { id: string | number; title: string }[
     //   node.id,
     //   ...node.children.map((child) => child.id),
     // ])
-    return innerMenus.map(({ id }) => {
-      const el = document.getElementById(id);
-      if (!el) return;
+    return innerMenus
+      .map(({ id }) => {
+        const el = document.getElementById(id);
+        if (!el) return null;
 
-      const style = window.getComputedStyle(el);
-      const scrollMt = Number.parseFloat(style.scrollMarginTop);
+        const style = window.getComputedStyle(el);
+        const scrollMt = Number.parseFloat(style.scrollMarginTop);
 
-      const top = window.scrollY + el.getBoundingClientRect().top - scrollMt;
-      return { id, top };
-    });
+        const top = window.scrollY + el.getBoundingClientRect().top - scrollMt;
+        return { id, top };
+      })
+      .filter(Boolean);
   }, []);
 
   useEffect(() => {

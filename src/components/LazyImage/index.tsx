@@ -8,8 +8,8 @@ const useLazyLoad = (src: string) => {
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        if (entry.isIntersecting) {
-          imgRef.current!.src = src;
+        if (entry.isIntersecting && imgRef.current) {
+          imgRef.current.src = src;
           observer.unobserve(entry.target);
         }
       }

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // 导出静态文件out
+  // output: 'export', // 开发模式关闭，部署时开启
   reactStrictMode: false,
   images: {
     unoptimized: true,
@@ -25,7 +25,6 @@ const nextConfig = {
   // },
   env: {
     ROUTE_PREFIX: '',
-    NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: [...(process.env.NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN || '')],
   },
 };
 

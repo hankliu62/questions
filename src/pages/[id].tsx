@@ -1,6 +1,7 @@
-import { BranchesOutlined } from '@hankliu/icons';
+import { BranchesOutlined, GithubOutlined, LogoutOutlined, UserOutlined } from '@hankliu/icons';
 import {
   Affix,
+  Avatar,
   Breadcrumb,
   Card,
   Collapse,
@@ -10,20 +11,23 @@ import {
   Space,
   Tag,
   Tooltip,
-  message,
 } from '@hankliu/hankliu-ui';
 import classNames from 'classnames';
 import Dayjs from 'dayjs';
-import type { InferGetStaticPropsType } from 'next';
 import ErrorPage from 'next/error';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import MarkdownPreview from '@/components/MarkdownPreview';
+import CommentsSection from '@/components/CommentsSection';
+import GitHubLoginModal, {
+  getCurrentUser,
+  logout as githubLogout,
+  GitHubUser,
+} from '@/components/GitHubLoginModal';
 import { GithubInterviewRepo, GithubOrigin, GithubOwner } from '@/constants/backend';
 import useAnchor from '@/hooks/useAnchor';
-import { fetchAllIssuesByStaticProps } from '@/lib/backend/issues';
 import { fetchIssue as getIssue } from '@/lib/frontend/issues';
 import type { IIssue } from '@/interfaces/questions';
 import { PageTitle } from '@/constants';
@@ -38,43 +42,70 @@ interface IIssueMenu {
   paddingLeft?: number;
 }
 
+interface PostPageProps {
+  issue: IIssue | null;
+}
+
 /**
- * 面试题目
+ * 面试题目详情页
  *
  * @returns
  */
-// export default function PostPage({ issue, menus }: InferGetStaticPropsType<typeof getStaticProps>) {
-export default function PostPage({ id }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function PostPage({ issue: initialIssue }: PostPageProps) {
   const router = useRouter();
+  const { id } = router.query;
 
   // 是否展开
   const [expanded, setExpanded] = useState<boolean>(true);
-  // 面试题目
-  const [issue, setIssue] = useState<IIssue>();
+  // 面试题目 - 使用 props 传入的数据
+  const [issue, setIssue] = useState<IIssue | null>(initialIssue || null);
   // 是否正在获取面试题目
-  const [fetching, setFetching] = useState<boolean>(true);
+  const [fetching, setFetching] = useState<boolean>(!initialIssue);
+  // 登录 Modal 显示状态
+  const [loginModalVisible, setLoginModalVisible] = useState<boolean>(false);
+  // 当前登录用户
+  const [currentUser, setCurrentUser] = useState<GitHubUser | null>(null);
+
+  // 检查登录状态
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  // 处理登录成功
+  const handleLoginSuccess = (user: GitHubUser) => {
+    setCurrentUser(user);
+  };
+
+  // 处理登出
+  const handleLogout = () => {
+    githubLogout();
+    setCurrentUser(null);
+  };
+
   // 题目字符串
   const menus = useMemo<string[]>(() => {
     return (issue?.body || '').split('\r\n').filter((line) => line.startsWith('##'));
   }, [issue]);
 
-  async function fetchIssue(curId: string) {
+  const fetchIssue = useCallback(async (curId: string) => {
     setFetching(true);
     try {
       const fetchedIssue = await getIssue(curId, GithubInterviewRepo);
       setIssue(fetchedIssue);
     } catch (error) {
-      message.error('获取面试题目失败');
+      console.error('获取面试题目失败:', error);
     } finally {
       setFetching(false);
     }
-  }
+  }, []);
 
+  // 如果没有初始数据，客户端获取
   useEffect(() => {
-    if (id) {
-      fetchIssue(id);
+    if (!initialIssue && id) {
+      fetchIssue(id as string);
     }
-  }, [id]);
+  }, [id, initialIssue, fetchIssue]);
 
   const issueMenus = useMemo<IIssueMenu[]>(() => {
     let minPrefixLength = Number.MAX_VALUE;
@@ -84,10 +115,6 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
       minPrefixLength = Math.min(prefixLength, minPrefixLength);
       const title = menu.replace(/^#+\s/, '');
 
-      // ID需要特殊处理，生成的markdown中标题犹如下规则(不全，遇到就补充)：
-      //  1. 英文字符大写 => 小写
-      //  2. 空格 => 中划线
-      //  3. 中文符号 => 删除
       const idStr = title
         .toLowerCase()
         .replace(/\s/g, '-')
@@ -120,7 +147,8 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
     return section.children.findIndex((element) => isActive(element)) > -1;
   }
 
-  if (!router.isFallback && !issue?.number) {
+  // 处理 404
+  if (!issue) {
     return <ErrorPage statusCode={404} />;
   }
 
@@ -130,6 +158,39 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
         <Skeleton active />
       ) : (
         <>
+          <div className="mb-4 flex items-center justify-end">
+            {currentUser ? (
+              <div className="flex items-center space-x-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                <a
+                  href={currentUser.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2"
+                >
+                  <Avatar src={currentUser.avatar_url} size={28} icon={<UserOutlined />} />
+                  <span className="text-sm font-medium text-gray-700">{currentUser.login}</span>
+                </a>
+                <div className="h-4 w-px bg-gray-300"></div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-1 text-sm text-gray-500 hover:text-red-500"
+                >
+                  <LogoutOutlined />
+                  <span>退出</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setLoginModalVisible(true)}
+                className="flex items-center space-x-2 rounded-lg bg-[#24292f] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1b1f23]"
+              >
+                <GithubOutlined />
+                <span>GitHub 登录</span>
+              </button>
+            )}
+          </div>
           <Breadcrumb className="!mb-6 !text-base" separator="/">
             <Breadcrumb.Item>
               <Link href="/">{PageTitle.split('-')[1].trim()}</Link>
@@ -149,8 +210,8 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
                     <Space
                       key="list-vertical-id"
                       onClick={(e) => {
-                        e?.stopPropagation && e.stopPropagation();
-                        e?.preventDefault && e.preventDefault();
+                        e?.stopPropagation?.();
+                        e?.preventDefault?.();
                         window.open(
                           `${GithubOrigin}/${GithubOwner}/${GithubInterviewRepo}/issues/${issue?.number}`,
                           '_blank',
@@ -165,8 +226,8 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
                     <Space
                       key="list-vertical-user"
                       onClick={(e) => {
-                        e?.stopPropagation && e.stopPropagation();
-                        e?.preventDefault && e.preventDefault();
+                        e?.stopPropagation?.();
+                        e?.preventDefault?.();
                         window.open(`${GithubOrigin}/${issue?.user?.login}`, '_blank');
                       }}
                       className="group cursor-pointer"
@@ -200,7 +261,7 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
                     <Space key="list-difficulty">
                       <Tooltip
                         title={`难度: ${
-                          issue.milestone?.number ? issue.milestone?.number + '颗🌟' : '未设置'
+                          issue.milestone?.number ? `${issue.milestone?.number}颗🌟` : '未设置'
                         }`}
                       >
                         <Rate defaultValue={issue.milestone?.number || 0} disabled />
@@ -213,6 +274,15 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
                   <section>
                     <MarkdownPreview source={issue.body || ''} showLoading />
                   </section>
+
+                  {/* 评论区域 */}
+                  {id && (
+                    <CommentsSection
+                      issueNumber={id as string}
+                      currentUser={currentUser}
+                      onLoginClick={() => setLoginModalVisible(true)}
+                    />
+                  )}
                 </article>
               </Card>
             </div>
@@ -270,43 +340,18 @@ export default function PostPage({ id }: InferGetStaticPropsType<typeof getStati
               </Affix>
             </div>
           </div>
+
+          {/* GitHub 登录 Modal */}
+          <GitHubLoginModal
+            visible={loginModalVisible}
+            onClose={() => setLoginModalVisible(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
         </>
       )}
     </div>
   );
 }
 
-type Params = {
-  params: {
-    id: string;
-  };
-};
-
-export async function getStaticProps({ params }: Params) {
-  // const issue = await fetchIssueByStaticProps(params.id);
-
-  // const menus = (issue.body || '').split('\r\n').filter((line) => line.startsWith('##'));
-
-  return {
-    props: {
-      // issue,
-      // menus,
-      id: params.id,
-    },
-  };
-}
-
-export async function getStaticPaths() {
-  const issus = await fetchAllIssuesByStaticProps();
-
-  return {
-    paths: issus.map((item) => {
-      return {
-        params: {
-          id: `${item.number}`,
-        },
-      };
-    }),
-    fallback: false,
-  };
-}
+// 禁用静态生成，使用客户端渲染
+export const dynamic = 'force-dynamic';

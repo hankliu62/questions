@@ -31,7 +31,7 @@ export default function MarkdownPreview({
       if (preview && preview.length > 0) {
         if (!loaded.current) {
           setLoadingMarkdownPreview(false);
-          onLoad && onLoad();
+          onLoad?.();
         }
 
         loaded.current = true;

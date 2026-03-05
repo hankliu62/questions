@@ -21,22 +21,20 @@ export default function DefaultLayout({ children }: LayoutProps) {
   const isTop = useTopWindow();
 
   return (
-    <>
-      <div
-        className="flex h-full min-h-[100vh] w-full flex-col"
-        style={{ flexDirection: 'column', minHeight: '100vh' }}
-      >
-        {/* header */}
-        <Header />
+    <div
+      className="flex h-full min-h-[100vh] w-full flex-col"
+      style={{ flexDirection: 'column', minHeight: '100vh' }}
+    >
+      {/* header */}
+      <Header />
 
-        {/* Main content */}
-        <main className="flex flex-1 grow-[1] flex-col" style={{ flex: 1 }}>
-          {children}
-        </main>
+      {/* Main content */}
+      <main className="flex flex-1 grow-[1] flex-col" style={{ flex: 1 }}>
+        {children}
+      </main>
 
-        {/* footer */}
-        {!!(isTop || router.query?.['with-footer']) && <Footer />}
-      </div>
-    </>
+      {/* footer */}
+      {!!(isTop || router.query?.['with-footer']) && <Footer />}
+    </div>
   );
 }
