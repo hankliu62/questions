@@ -9,7 +9,9 @@ const useLazyLoad = (style: React.CSSProperties) => {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          imgRef.current?.style.backgroundImage = style?.backgroundImage ?? '';
+          if (imgRef.current) {
+            imgRef.current.style.backgroundImage = style?.backgroundImage ?? '';
+          }
           observer.unobserve(entry.target);
         }
       }
