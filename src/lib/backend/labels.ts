@@ -3,7 +3,7 @@ import { Octokit } from 'octokit';
 import { GitHubApiVersion, GithubBackendToken, GithubOwner } from '@/constants/backend';
 import type { ILabel } from '@/interfaces/questions';
 
-const auth = GithubBackendToken;
+const auth = Array.isArray(GithubBackendToken) ? GithubBackendToken.join('') : GithubBackendToken;
 
 /**
  * 根据获取所有的标签

@@ -3,7 +3,9 @@ import fetch from 'isomorphic-fetch';
 import { GitHubApiVersion, GithubApi, GithubFrontendToken, GithubOwner } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
 
-const auth = GithubFrontendToken;
+const auth = Array.isArray(GithubFrontendToken)
+  ? GithubFrontendToken.join('')
+  : GithubFrontendToken;
 const DefaultPerPage = 10;
 
 // 缓存的所有问题

@@ -11,7 +11,7 @@ import {
 } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
 
-const auth = GithubBackendToken;
+const auth = Array.isArray(GithubBackendToken) ? GithubBackendToken.join('') : GithubBackendToken;
 
 /**
  * 获取面试题详情
