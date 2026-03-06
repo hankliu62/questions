@@ -76,6 +76,43 @@ if (arr && arr.length > 0) {
 }
 ```
 
+### 4. Ant Design List 组件 dataSource 必填默认值
+
+❌ **错误写法**
+
+```tsx
+// 当 issues 为 undefined 时会报错
+<List dataSource={issues} />
+```
+
+✅ **正确写法**
+
+```tsx
+// 始终提供默认值
+<List dataSource={issues || []} />
+```
+
+**原因**：Ant Design 的 List 组件内部会尝试展开 dataSource，当为 undefined 或 null 时会抛出 "Invalid attempt to spread non-iterable instance" 错误。
+
+### 5. Map/缓存获取值必做空值检查
+
+❌ **错误写法**
+
+```typescript
+// Map.get() 可能返回 undefined
+const issues = cacheIssues.get(repo);
+// 后续直接使用 issues 可能报错
+issues.filter(...);
+```
+
+✅ **正确写法**
+
+```typescript
+// 始终提供默认值
+const issues = cacheIssues.get(repo) || [];
+issues.filter(...);
+```
+
 ---
 
 ## React 规范
@@ -269,6 +306,49 @@ pnpm tsc
 | `Cannot read property 'xxx' of undefined` | 使用可选链 `?.` 读取 |
 | `React Hook missing dependency` | 将依赖添加到依赖数组，或使用 `useCallback` |
 | `Type 'undefined' is not assignable to type 'xxx'` | 提供默认值或明确类型 |
+
+---
+
+## 开发流程规范
+
+### 完成任务后的验证要求
+
+**重要**：每次修复 bug 或实现功能后，必须进行验证才能结束任务。
+
+#### 验证步骤
+
+1. **构建验证**
+
+```bash
+# 运行构建，确保无编译错误
+pnpm build
+```
+
+2. **开发服务器验证**
+
+```bash
+# 启动开发服务器
+pnpm dev
+
+# 验证页面加载（检查返回状态码）
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+# 预期输出: 200
+```
+
+3. **清理验证进程**
+
+```bash
+# 验证完成后关闭开发服务器
+pkill -f "next dev" || true
+```
+
+#### 常见组件问题排查
+
+| 问题场景                | 检查点                                       |
+| ----------------------- | -------------------------------------------- | --- | ---- |
+| List/Map/Array 组件报错 | 确保 `dataSource` 有默认值 `dataSource={data |     | []}` |
+| 可选属性赋值报错        | 使用 `if (ref.current)` 包裹后再赋值         |
+| 组件渲染失败            | 检查控制台错误，确保 props 类型正确          |
 
 ---
 

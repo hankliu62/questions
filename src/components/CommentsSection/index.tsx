@@ -1,8 +1,8 @@
 import { Avatar, Button, Empty, List, message } from '@hankliu/hankliu-ui';
-import { GithubOutlined, SendOutlined, UserOutlined, LoadingOutlined } from '@hankliu/icons';
-import { useCallback, useEffect, useState } from 'react';
-import Dayjs from 'dayjs';
+import { GithubOutlined, LoadingOutlined, SendOutlined, UserOutlined } from '@hankliu/icons';
 import classNames from 'classnames';
+import Dayjs from 'dayjs';
+import { useCallback, useEffect, useState } from 'react';
 
 import { GithubInterviewRepo, GithubOwner } from '@/constants/backend';
 import type { GitHubUser } from '../GitHubLoginModal';
@@ -186,7 +186,7 @@ export default function CommentsSection({
       ) : (
         <div className="space-y-4">
           <List
-            dataSource={comments}
+            dataSource={comments || []}
             renderItem={(comment) => (
               <List.Item className="!border-b border-gray-100 !pb-4 !pt-4">
                 <div className="flex w-full space-x-3">

@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-fetch';
 
-import { GithubApi, GitHubApiVersion, GithubFrontendToken, GithubOwner } from '@/constants/backend';
+import { GitHubApiVersion, GithubApi, GithubFrontendToken, GithubOwner } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
 
 const auth = GithubFrontendToken;
@@ -43,7 +43,12 @@ export const fetchIssues = async (
       'X-GitHub-Api-Version': GitHubApiVersion,
       Authorization: `Bearer ${auth}`,
     },
-  }).then((response) => response.json());
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // 确保返回的是数组，否则返回空数组
+      return Array.isArray(data) ? data : [];
+    });
 };
 
 /**
@@ -140,7 +145,7 @@ export const searchIssues = async (
         const matchCache = current - (lastCacheIssuesTimestamp.get(repo) || 0) < 60 * 1000 * 60;
         let issues: IIssue[] = [];
         if (matchCache) {
-          issues = cacheIssues.get(repo);
+          issues = cacheIssues.get(repo) || [];
         } else {
           const fetchedIssues: IIssue[] = await fetchAllIssues(repo, options);
           cacheIssues.set(repo, fetchedIssues);

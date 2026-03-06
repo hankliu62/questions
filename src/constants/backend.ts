@@ -1,4 +1,4 @@
-// 前端github token
+// 前端github token（可选，用于提高 API 速率限制，不设置则使用未认证 API）
 export const GithubFrontendToken = process.env.NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN || '';
 
 // 仓库action触发时，github action的token

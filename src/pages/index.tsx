@@ -1,3 +1,4 @@
+import { Affix, Card, Collapse, Input, List, Rate, Space, Tag, Tooltip } from '@hankliu/hankliu-ui';
 import {
   BranchesOutlined,
   CheckSquareOutlined,
@@ -5,7 +6,6 @@ import {
   InteractionOutlined,
   UserOutlined,
 } from '@hankliu/icons';
-import { Affix, Card, Collapse, Input, List, Rate, Space, Tag, Tooltip } from '@hankliu/hankliu-ui';
 import classNames from 'classnames';
 import Dayjs from 'dayjs';
 import type { InferGetStaticPropsType } from 'next';
@@ -213,7 +213,7 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
             itemLayout="vertical"
             size="large"
             pagination={false}
-            dataSource={issues}
+            dataSource={issues || []}
             loading={isFetching}
             renderItem={(item) => (
               <List.Item
