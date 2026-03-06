@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'export', // 开发模式关闭，部署时开启
+  output: 'export', // 启用静态导出，输出到 out 目录
   reactStrictMode: false,
   images: {
     unoptimized: true,
