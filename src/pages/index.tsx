@@ -17,6 +17,7 @@ import LoadMore from '@/components/LoadMore';
 import { GithubInterviewRepo, GithubOrigin, GithubOwner } from '@/constants/backend';
 import useAsyncEffect from '@/hooks/useAsyncEffect';
 import type { IIssue, ILabel } from '@/interfaces/questions';
+import { fetchIssues } from '@/lib/backend/issues';
 import { fetchLabelsByStaticProps } from '@/lib/backend/labels';
 import { searchIssues } from '@/lib/frontend/issues';
 
@@ -57,8 +58,13 @@ const IconText = ({
   </Space>
 );
 
-export default function Questions({ labels }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Questions({
+  labels,
+  initialIssues,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   const router = useRouter();
+  // 使用预渲染的数据作为初始值
+  const [issues, setIssues] = useState<IIssue[]>(initialIssues || []);
   // 选择的Label
   const [selectedLabel, setSelectedLabel] = useState<string>(router.query.label as string);
   // 是否展开
@@ -66,9 +72,7 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
   // 是否正在获取面试题
   const [isFetching, setIsFetching] = useState<boolean>(false);
   // 是否获取完所有面试题
-  const [isEnd, setIsEnd] = useState<boolean>(true);
-  // 面试题列表
-  const [issues, setIssues] = useState<IIssue[]>([]);
+  const [isEnd, setIsEnd] = useState<boolean>(false);
   // 分页-当前页数
   const [page, setPage] = useState<number>(1);
   // 搜索关键词
@@ -320,6 +324,18 @@ export default function Questions({ labels }: InferGetStaticPropsType<typeof get
 }
 
 export async function getStaticProps() {
+  // 在构建时获取初始的 issues 数据
+  let initialIssues: IIssue[] = [];
+  try {
+    initialIssues = await fetchIssues(GithubInterviewRepo, 1, { per_page: 100 });
+    // 确保返回的是数组
+    if (!Array.isArray(initialIssues)) {
+      initialIssues = [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch issues in getStaticProps:', error);
+  }
+
   const labels = await fetchLabelsByStaticProps(GithubInterviewRepo, 1);
 
   const sortedLabels = labels
@@ -349,6 +365,7 @@ export async function getStaticProps() {
   return {
     props: {
       labels: sortedLabels,
+      initialIssues: Array.isArray(initialIssues) ? initialIssues : [],
     },
   };
 }

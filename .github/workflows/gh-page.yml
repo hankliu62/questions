@@ -40,9 +40,10 @@ jobs:
 
       - name: 打包 🏗️
         env:
-          NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: ''
-          NEXT_GITHUB_BACKED_TOKEN: ''
-        run: pnpm run build && touch ./out/.nojekyll # run: touch ./out/.nojekyll是因为由于 Jekyll 处理,GitHub 默认不提供_next文件夹,.nojekyll文件阻止了这种情况,
+          # 使用 GitHub Actions 提供的 GITHUB_TOKEN
+          NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_GITHUB_BACKED_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm run build && touch ./out/.nojekyll
       - name: 部署 🚀
         uses: JamesIves/github-pages-deploy-action@v4.6.4
         with:
