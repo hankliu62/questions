@@ -24,7 +24,14 @@ const nextConfig = {
   // },
   env: {
     ROUTE_PREFIX: '',
-    NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: process.env.NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN || '',
+    NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: (function (str) {
+      if (!str || str.startsWith('h:')) return str || '';
+      try {
+        return 'h:' + Buffer.from(encodeURIComponent(str)).toString('base64');
+      } catch (_e) {
+        return str;
+      }
+    })(process.env.NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN),
   },
 };
 
