@@ -17,7 +17,7 @@ export interface GitHubUser {
   name?: string;
 }
 
-const GITHUB_CLIENT_ID = 'Ov23liAxae50v73Ca2V4';
+const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || 'Ov23liAxae50v73Ca2V4';
 
 export default function GitHubLoginModal({
   visible,
