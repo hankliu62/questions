@@ -60,7 +60,7 @@ export default function OAuthCallback() {
   // 使用 Vercel API 获取 token
   const fetchTokenViaProxy = useCallback(
     async (code: string, codeVerifier: string): Promise<string> => {
-      const clientId = 'Ov23lilW2X3rRlBsldqb';
+      const clientId = 'Ov23liDhzkL6Ljnu3F4M';
 
       // 自动检测 basePath
       const pathParts = window.location.pathname.split('/').filter(Boolean);

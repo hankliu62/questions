@@ -1,26 +1,51 @@
 /**
  * GitHub OAuth Token API
  * 部署到 Vercel: https://vercel.com
- *
- * 使用方法：
- * 1. 部署此 API 到 Vercel
- * 2. 在 GitHub OAuth App 中添加回调地址: https://your-vercel-app.vercel.app/api/oauth/callback
- * 3. 在前端 callback.tsx 中将代理地址改为: https://your-vercel-app.vercel.app/api/oauth
  */
 
 export default async function handler(request, response) {
+  // 设置 CORS 头部
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // 处理预检请求
+  if (request.method === 'OPTIONS') {
+    return response.status(200).end();
+  }
+
   // 只允许 POST 请求
   if (request.method !== 'POST') {
     return response.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, client_id, redirect_uri, code_verifier } = request.body;
+  // 解析 body
+  let body = request.body;
+  if (typeof request.body === 'string') {
+    try {
+      body = JSON.parse(request.body);
+    } catch {
+      const params = new URLSearchParams(request.body);
+      body = {
+        code: params.get('code'),
+        client_id: params.get('client_id'),
+        redirect_uri: params.get('redirect_uri'),
+        code_verifier: params.get('code_verifier'),
+      };
+    }
+  }
+
+  const { code, client_id, redirect_uri, code_verifier } = body;
 
   if (!code || !client_id || !redirect_uri || !code_verifier) {
     return response.status(400).json({ error: 'Missing required parameters' });
   }
 
   try {
+    // 解码 redirect_uri（前端已经编码过一次）
+    const decodedRedirectUri = decodeURIComponent(redirect_uri);
+    console.log('Decoded redirect_uri:', decodedRedirectUri);
+
     // 发送到 GitHub 获取 token
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -31,12 +56,13 @@ export default async function handler(request, response) {
       body: new URLSearchParams({
         client_id,
         code,
-        redirect_uri,
+        redirect_uri: decodedRedirectUri,
         code_verifier,
       }).toString(),
     });
 
     const tokenData = await tokenResponse.json();
+    console.log('GitHub response:', tokenData);
 
     if (tokenData.error) {
       return response.status(400).json({
