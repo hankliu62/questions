@@ -2,9 +2,10 @@ import fetch from 'isomorphic-fetch';
 
 import { GitHubApiVersion, GithubApi, GithubFrontendToken, GithubOwner } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
+import { deobfuscate } from '@/utils/crypto';
 
 const auth = Array.isArray(GithubFrontendToken)
-  ? GithubFrontendToken.reverse().join('')
+  ? GithubFrontendToken.join('')
   : GithubFrontendToken;
 const DefaultPerPage = 10;
 
@@ -43,7 +44,7 @@ export const fetchIssues = async (
   return fetch(url, {
     headers: {
       'X-GitHub-Api-Version': GitHubApiVersion,
-      Authorization: `Bearer ${auth}`,
+      Authorization: `Bearer ${deobfuscate(auth)}`,
     },
   })
     .then((response) => response.json())
@@ -129,7 +130,7 @@ export const searchIssues = async (
         const response = await fetch(url, {
           headers: {
             'X-GitHub-Api-Version': GitHubApiVersion,
-            Authorization: `Bearer ${auth}`,
+            Authorization: `Bearer ${deobfuscate(auth)}`,
           },
         });
 
@@ -188,7 +189,7 @@ export const fetchIssue = async (issueNumber: string, repo: string): Promise<IIs
   return fetch(url, {
     headers: {
       'X-GitHub-Api-Version': GitHubApiVersion,
-      Authorization: `Bearer ${auth}`,
+      Authorization: `Bearer ${deobfuscate(auth)}`,
     },
   }).then((response) => response.json());
 };
