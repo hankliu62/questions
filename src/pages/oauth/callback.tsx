@@ -75,8 +75,8 @@ export default function OAuthCallback() {
         code_verifier: codeVerifier,
       });
 
-      // 使用 allorigins CORS 代理
-      const proxyUrl = `https://api.allorigins.win/post?url=${encodeURIComponent('https://github.com/login/oauth/access_token')}`;
+      // 使用 corsproxy.io CORS 代理
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent('https://github.com/login/oauth/access_token')}`;
 
       const response = await fetch(proxyUrl, {
         method: 'POST',
@@ -91,7 +91,7 @@ export default function OAuthCallback() {
       }
 
       const data = await response.json();
-      // allorigins 返回的内容在 contents 字段中
+      // corsproxy 返回的内容在 contents 字段中
       const contents = new URLSearchParams(data.contents);
 
       const accessToken = contents.get('access_token');
