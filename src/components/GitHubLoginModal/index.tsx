@@ -1,6 +1,7 @@
 import { Modal } from '@hankliu/hankliu-ui';
 import { GithubOutlined } from '@hankliu/icons';
 import { useState } from 'react';
+import { generateCodeChallenge, generateCodeVerifier } from '@/utils/pkce';
 
 interface GitHubLoginModalProps {
   visible: boolean;
@@ -27,16 +28,37 @@ export default function GitHubLoginModal({
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
 
-  // 使用 GitHub OAuth Web Flow
-  const handleGitHubLogin = () => {
+  // 使用 GitHub OAuth Web Flow (PKCE)
+  const handleGitHubLogin = async () => {
     // 生成随机 state 用于防止 CSRF
     const state = Math.random().toString(36).substring(7);
     sessionStorage.setItem('github_oauth_state', state);
 
-    const redirectUri = encodeURIComponent(`${window.location.origin}/oauth/callback`);
+    // 生成 PKCE code_verifier 和 code_challenge
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+    // 保存 code_verifier 用于回调时换取 token
+    sessionStorage.setItem('github_code_verifier', codeVerifier);
+
+    // 自动检测是否在 GitHub Pages 环境（生产环境）
+    // GitHub Pages 部署时 basePath 为 /questions，本地开发为空
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const basePath = pathParts[0] === 'questions' ? '/questions' : '';
+    const redirectUri = `${window.location.origin}${basePath}/oauth/callback`;
+
     const scope = 'read:user user:email';
 
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+    // 构建授权 URL（包含 PKCE）
+    const authUrl = new URL('https://github.com/login/oauth/authorize');
+    authUrl.searchParams.set('client_id', GITHUB_CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', scope);
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('code_challenge', codeChallenge);
+    authUrl.searchParams.set('code_challenge_method', 'S256');
+
+    window.location.href = authUrl.toString();
   };
 
   // 使用 PAT (Personal Access Token) 登录
