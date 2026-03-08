@@ -63,7 +63,7 @@ export default function OAuthCallback() {
   const fetchTokenViaJSONP = useCallback((code: string, codeVerifier: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const callbackName = 'github_token_callback_' + Date.now();
-      const clientId = 'Ov23li3OGt6R4yzW4n4x';
+      const clientId = 'Ov23lilW2X3rRlBsldqb';
 
       // 自动检测 basePath（与登录页面保持一致）
       const pathParts = window.location.pathname.split('/').filter(Boolean);

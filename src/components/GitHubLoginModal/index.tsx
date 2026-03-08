@@ -17,7 +17,7 @@ export interface GitHubUser {
   name?: string;
 }
 
-const GITHUB_CLIENT_ID = 'Ov23li3OGt6R4yzW4n4x'; // 需要替换为实际的 Client ID
+const GITHUB_CLIENT_ID = 'Ov23lilW2X3rRlBsldqb';
 
 export default function GitHubLoginModal({
   visible,
