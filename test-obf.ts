@@ -1,6 +1,6 @@
 import { obfuscate, deobfuscate, isObfuscated } from './src/utils/crypto';
 
-const testToken = 'ghp_test_token_12345';
+const testToken = 'g1h1p_test_token_12345';
 console.log('Original Token:', testToken);
 
 const obfuscated = obfuscate(testToken);

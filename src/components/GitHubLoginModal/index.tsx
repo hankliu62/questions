@@ -122,7 +122,7 @@ export default function GitHubLoginModal({
             type="password"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder="ghp_xxxxxxxxxxxx"
+            placeholder="xxxxxxxxxxxx"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition-colors focus:border-[#1e80ff] focus:outline-none focus:ring-1 focus:ring-[#1e80ff]"
           />
           <p className="text-xs text-gray-500">
