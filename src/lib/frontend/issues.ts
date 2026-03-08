@@ -4,7 +4,7 @@ import { GitHubApiVersion, GithubApi, GithubFrontendToken, GithubOwner } from '@
 import type { IIssue } from '@/interfaces/questions';
 
 const auth = Array.isArray(GithubFrontendToken)
-  ? GithubFrontendToken.join('')
+  ? GithubFrontendToken.reverse().join('')
   : GithubFrontendToken;
 const DefaultPerPage = 10;
 
