@@ -60,31 +60,27 @@ export default function OAuthCallback() {
   // 使用 Vercel API 获取 token
   const fetchTokenViaProxy = useCallback(
     async (code: string, codeVerifier: string): Promise<string> => {
-      const clientId = 'Ov23liAxae50v73Ca2V4';
-
       // 自动检测 basePath
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       const basePath = pathParts[0] === 'questions' ? '/questions' : '';
-      const redirectUri = encodeURIComponent(`${window.location.origin}${basePath}/oauth/callback`);
+      const redirectUri = `${window.location.origin}${basePath}/oauth/callback`;
 
-      // 构建请求体
-      const params = new URLSearchParams({
-        client_id: clientId,
-        code,
-        redirect_uri: redirectUri,
-        code_verifier: codeVerifier,
-      });
-
-      // 使用 Vercel API 代理
+      // 使用通用 OAuth API
       const VERCEL_API_URL =
-        process.env.NEXT_PUBLIC_GITHUB_OAUTH_API || 'https://vercel-oauth-api.vercel.app/api/oauth';
+        process.env.NEXT_PUBLIC_OAUTH_API || 'https://vercel-oauth-api.vercel.app/api/oauth';
 
       const response = await fetch(VERCEL_API_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
+          'X-App-Id': 'questions', // 应用标识
+          'X-OAuth-Provider': 'github', // 可选，默认 github
         },
-        body: params.toString(),
+        body: JSON.stringify({
+          code,
+          codeVerifier,
+          redirectUri,
+        }),
       });
 
       if (!response.ok) {
