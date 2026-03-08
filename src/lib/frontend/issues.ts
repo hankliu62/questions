@@ -2,7 +2,6 @@ import fetch from 'isomorphic-fetch';
 
 import { GitHubApiVersion, GithubApi, GithubFrontendToken, GithubOwner } from '@/constants/backend';
 import type { IIssue } from '@/interfaces/questions';
-import { deobfuscate } from '@/utils/crypto';
 
 const auth = Array.isArray(GithubFrontendToken)
   ? GithubFrontendToken.join('')
@@ -44,7 +43,7 @@ export const fetchIssues = async (
   return fetch(url, {
     headers: {
       'X-GitHub-Api-Version': GitHubApiVersion,
-      Authorization: `Bearer ${deobfuscate(auth)}`,
+      Authorization: `Bearer ghp_${auth}`,
     },
   })
     .then((response) => response.json())
@@ -130,7 +129,7 @@ export const searchIssues = async (
         const response = await fetch(url, {
           headers: {
             'X-GitHub-Api-Version': GitHubApiVersion,
-            Authorization: `Bearer ${deobfuscate(auth)}`,
+            Authorization: `Bearer ghp_${auth}`,
           },
         });
 
@@ -189,7 +188,7 @@ export const fetchIssue = async (issueNumber: string, repo: string): Promise<IIs
   return fetch(url, {
     headers: {
       'X-GitHub-Api-Version': GitHubApiVersion,
-      Authorization: `Bearer ${deobfuscate(auth)}`,
+      Authorization: `Bearer ghp_${auth}`,
     },
   }).then((response) => response.json());
 };

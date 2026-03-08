@@ -24,14 +24,7 @@ const nextConfig = {
   // },
   env: {
     ROUTE_PREFIX: '',
-    FRONTEND_TOKEN: (function (str) {
-      if (!str || str.startsWith('h:')) return str || '';
-      try {
-        return 'h:' + Buffer.from(encodeURIComponent(str)).toString('base64');
-      } catch (_e) {
-        return str;
-      }
-    })(process.env.FRONTEND_TOKEN),
+    FRONTEND_TOKEN: process.env.FRONTEND_TOKEN || '',
   },
 };
 
