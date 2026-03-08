@@ -40,9 +40,9 @@ jobs:
 
       - name: 打包 🏗️
         env:
-          # 使用 GitHub Actions 提供的 GITHUB_TOKEN
-          NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEXT_GITHUB_BACKED_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 环境变量中配置的TOKEN
+          FRONTEND_TOKEN: ${{ secrets.FRONTEND_TOKEN }}
+          BACKED_TOKEN: ${{ secrets.BACKED_TOKEN }}
         run: pnpm run build && touch ./out/.nojekyll
       - name: 部署 🚀
         uses: JamesIves/github-pages-deploy-action@v4.6.4

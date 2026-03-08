@@ -1,12 +1,10 @@
 import { deobfuscate } from '@/utils/crypto';
 
 // 前端github token（可选，用于提高 API 速率限制，不设置则使用未认证 API）
-export const GithubFrontendToken = [
-  ...deobfuscate(process.env.NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN || ''),
-];
+export const GithubFrontendToken = [...deobfuscate(process.env.FRONTEND_TOKEN || '')];
 
 // 仓库action触发时，github action的token
-export const GithubBackendToken = [...(process.env.NEXT_GITHUB_BACKEND_TOKEN || '')];
+export const GithubBackendToken = [...(process.env.BACKEND_TOKEN || '')];
 
 export const GithubApi = 'https://api.github.com';
 

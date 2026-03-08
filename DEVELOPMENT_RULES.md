@@ -360,8 +360,8 @@ pkill -f "next dev" || true
 
 ```bash
 # .env.local（不会被提交到 git）
-NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN=your_token_here
-NEXT_GITHUB_BACKED_TOKEN=your_token_here
+FRONTEND_TOKEN=your_token_here
+BACKED_TOKEN=your_token_here
 ```
 
 **CI 构建**：在 workflow 中配置
@@ -369,9 +369,9 @@ NEXT_GITHUB_BACKED_TOKEN=your_token_here
 ```yaml
 - name: 打包 🏗️
   env:
-    # 使用 GITHUB_TOKEN（自动生成，不会被检测为 secret 泄露）
-    NEXT_PUBLIC_GITHUB_FRONTEND_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    NEXT_GITHUB_BACKED_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # 环境变量中配置的TOKEN
+    FRONTEND_TOKEN: ${{ secrets.FRONTEND_TOKEN }}
+    BACKED_TOKEN: ${{ secrets.BACKED_TOKEN }}
   run: pnpm run build && touch ./out/.nojekyll
 
 - name: 删除本地环境变量文件
@@ -380,7 +380,7 @@ NEXT_GITHUB_BACKED_TOKEN=your_token_here
 
 ### 2. Secret 泄露防护
 
-- ✅ 使用 `GITHUB_TOKEN`（不会被 GitHub secret scanning 检测）
+- ✅ 使用 `BACKED_TOKEN`（不会被 GitHub secret scanning 检测）
 - ❌ 不要使用 `ghp_`、`gho_` 等开头的 Personal Access Token
 - ✅ 构建前删除 `.env.local` 文件
 
@@ -388,9 +388,9 @@ NEXT_GITHUB_BACKED_TOKEN=your_token_here
 
 | 问题                                     | 解决方案                                   |
 | ---------------------------------------- | ------------------------------------------ |
-| 推送被阻止 "Push cannot contain secrets" | 使用 `secrets.GITHUB_TOKEN` 替代手动 token |
+| 推送被阻止 "Push cannot contain secrets" | 使用 `secrets.BACKED_TOKEN` 替代手动 token |
 | 401 Bad credentials                      | 检查 token 是否正确设置                    |
-| 速率限制                                 | 使用 `GITHUB_TOKEN` 或等待 1 小时          |
+| 速率限制                                 | 使用 `BACKED_TOKEN` 或等待 1 小时          |
 
 ---
 

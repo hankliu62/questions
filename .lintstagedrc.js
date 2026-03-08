@@ -6,7 +6,7 @@ const buildEslintCommand = (filenames) =>
     .join(' --file ')}`;
 
 module.exports = {
-  '**/*.{js,jsx,ts,tsx,md,html,css,scss,json}': [
+  '**/*.{js,jsx,ts,tsx,html,css,scss,json}': [
     'npx @biomejs/biome format --write',
     'prettier --write',
   ],
