@@ -60,7 +60,7 @@ export default function OAuthCallback() {
   // 使用 Vercel API 获取 token
   const fetchTokenViaProxy = useCallback(
     async (code: string, codeVerifier: string): Promise<string> => {
-      const clientId = 'Ov23liDhzkL6Ljnu3F4M';
+      const clientId = 'Ov23liAxae50v73Ca2V4';
 
       // 自动检测 basePath
       const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -173,7 +173,7 @@ export default function OAuthCallback() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-sky-100 px-4">
         <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
           {/* 顶部错误图标区域 */}
-          <div className="relative bg-gradient-to-br from-red-50 to-orange-50 px-8 py-10 text-center">
+          <div className="relative my-6 bg-gradient-to-br from-red-50 to-orange-50 px-8 py-10 text-center">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-red-100/50 to-transparent"></div>
             <div className="relative">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
