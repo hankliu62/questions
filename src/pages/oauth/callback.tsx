@@ -57,7 +57,7 @@ export default function OAuthCallback() {
 
   handleLoginSuccessRef.current = handleLoginSuccess;
 
-  // 使用 CORS 代理获取 token
+  // 使用 Vercel API 获取 token
   const fetchTokenViaProxy = useCallback(
     async (code: string, codeVerifier: string): Promise<string> => {
       const clientId = 'Ov23lilW2X3rRlBsldqb';
@@ -75,10 +75,11 @@ export default function OAuthCallback() {
         code_verifier: codeVerifier,
       });
 
-      // 使用 corsproxy.io CORS 代理
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent('https://github.com/login/oauth/access_token')}`;
+      // 使用 Vercel API 代理
+      const VERCEL_API_URL =
+        process.env.NEXT_PUBLIC_GITHUB_OAUTH_API || 'https://vercel-oauth-api.vercel.app/api/oauth';
 
-      const response = await fetch(proxyUrl, {
+      const response = await fetch(VERCEL_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -91,22 +92,16 @@ export default function OAuthCallback() {
       }
 
       const data = await response.json();
-      // corsproxy 返回的内容在 contents 字段中
-      const contents = new URLSearchParams(data.contents);
 
-      const accessToken = contents.get('access_token');
-      const error = contents.get('error');
-      const errorDescription = contents.get('error_description');
-
-      if (error) {
-        throw new Error(errorDescription || error);
+      if (data.error) {
+        throw new Error(data.error_description || data.error);
       }
 
-      if (!accessToken) {
+      if (!data.access_token) {
         throw new Error('获取 access_token 失败');
       }
 
-      return accessToken;
+      return data.access_token;
     },
     [],
   );
