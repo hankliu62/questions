@@ -43,6 +43,9 @@ jobs:
           # 环境变量中配置的TOKEN
           FRONTEND_TOKEN: ${{ secrets.FRONTEND_TOKEN }}
           BACKED_TOKEN: ${{ secrets.BACKED_TOKEN }}
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+          NEXT_PUBLIC_OAUTH_API: ${{ secrets.NEXT_PUBLIC_OAUTH_API }}
         run: pnpm run build && touch ./out/.nojekyll
       - name: 部署 🚀
         uses: JamesIves/github-pages-deploy-action@v4.6.4

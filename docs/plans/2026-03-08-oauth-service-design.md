@@ -17,6 +17,7 @@
 ## Task 1: 初始化项目
 
 **Files:**
+
 - Create: `oauth-backend/package.json`
 - Create: `oauth-backend/tsconfig.json`
 - Create: `oauth-backend/rsbuild.config.ts`
@@ -113,6 +114,7 @@ git push -u origin main
 ## Task 2: 实现配置管理工具
 
 **Files:**
+
 - Modify: `oauth-backend/src/utils/config.ts`
 
 **Step 1: 编写配置工具**
@@ -137,7 +139,7 @@ export interface AppConfig {
  */
 export function getAppConfig(appId: string, provider: string = 'github'): AppConfig | null {
   const prefix = `${provider.toUpperCase()}_OAUTH_${appId.toUpperCase()}`;
-  
+
   const clientId = process.env[`${prefix}_CLIENT_ID`];
   const clientSecret = process.env[`${prefix}_CLIENT_SECRET`];
   const callbackUrl = process.env[`${prefix}_CALLBACK_URL`];
@@ -158,14 +160,14 @@ export function getAppConfig(appId: string, provider: string = 'github'): AppCon
  */
 export function getSupportedProviders(): string[] {
   const providers = new Set<string>();
-  
-  Object.keys(process.env).forEach(key => {
+
+  Object.keys(process.env).forEach((key) => {
     const match = key.match(/^(\w+)_OAUTH_\w+_CLIENT_ID$/);
     if (match) {
       providers.add(match[1].toLowerCase());
     }
   });
-  
+
   return Array.from(providers);
 }
 
@@ -178,7 +180,7 @@ export function validateConfig(config: AppConfig | null, redirectUri: string): v
   if (!config) {
     throw new Error('应用未配置');
   }
-  
+
   if (config.callbackUrl !== redirectUri) {
     throw new Error('回调地址不匹配');
   }
@@ -197,6 +199,7 @@ git commit -m "feat: 实现配置管理工具"
 ## Task 3: 实现 OAuth 路由
 
 **Files:**
+
 - Modify: `oauth-backend/src/routes/oauth.ts`
 
 **Step 1: 编写 OAuth 路由**
@@ -221,7 +224,7 @@ router.post('/api/oauth', async (ctx) => {
   // 获取请求头中的应用标识
   const appId = ctx.get('X-App-Id');
   const provider = ctx.get('X-OAuth-Provider') || 'github';
-  
+
   if (!appId) {
     ctx.status = 400;
     ctx.body = { error: 'Missing X-App-Id header' };
@@ -230,7 +233,7 @@ router.post('/api/oauth', async (ctx) => {
 
   // 获取请求体
   const { code, codeVerifier, redirectUri } = ctx.request.body as OAuthRequestBody;
-  
+
   if (!code || !codeVerifier || !redirectUri) {
     ctx.status = 400;
     ctx.body = { error: 'Missing required parameters: code, codeVerifier, redirectUri' };
@@ -239,7 +242,7 @@ router.post('/api/oauth', async (ctx) => {
 
   // 获取应用配置
   const config = getAppConfig(appId, provider);
-  
+
   if (!config) {
     ctx.status = 404;
     ctx.body = { error: `应用 ${appId} 未配置` };
@@ -256,9 +259,10 @@ router.post('/api/oauth', async (ctx) => {
   }
 
   // 根据不同提供商构建请求
-  const tokenUrl = provider === 'gitee' 
-    ? 'https://gitee.com/oauth/token'
-    : 'https://github.com/login/oauth/access_token';
+  const tokenUrl =
+    provider === 'gitee'
+      ? 'https://gitee.com/oauth/token'
+      : 'https://github.com/login/oauth/access_token';
 
   try {
     // 发送到 OAuth 提供商获取 token
@@ -321,6 +325,7 @@ git commit -m "feat: 实现 OAuth 路由"
 ## Task 4: 创建 Koa 应用入口
 
 **Files:**
+
 - Modify: `oauth-backend/src/app.ts`
 - Modify: `oauth-backend/src/index.ts`
 
@@ -336,11 +341,13 @@ import oauthRouter from './routes/oauth';
 const app = new Koa();
 
 // 中间件
-app.use(cors({
-  origin: '*',
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'X-App-Id', 'X-OAuth-Provider'],
-}));
+app.use(
+  cors({
+    origin: '*',
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'X-App-Id', 'X-OAuth-Provider'],
+  }),
+);
 
 app.use(bodyParser());
 
@@ -389,6 +396,7 @@ git push origin main
 ## Task 5: 更新前端代码
 
 **Files:**
+
 - Modify: `frontend-questions/src/pages/oauth/callback.tsx`
 - Modify: `frontend-questions/src/components/GitHubLoginModal/index.tsx`
 
@@ -398,14 +406,15 @@ git push origin main
 
 ```typescript
 // 使用通用 OAuth API
-const VERCEL_API_URL = process.env.NEXT_PUBLIC_OAUTH_API || 'https://vercel-oauth-api.vercel.app/api/oauth';
+const VERCEL_API_URL =
+  process.env.NEXT_PUBLIC_OAUTH_API || 'https://oauth-backend.vercel.app/api/oauth';
 
 const response = await fetch(VERCEL_API_URL, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'X-App-Id': 'questions',  // 应用标识
-    'X-OAuth-Provider': 'github',  // 可选，默认 github
+    'X-App-Id': 'questions', // 应用标识
+    'X-OAuth-Provider': 'github', // 可选，默认 github
   },
   body: JSON.stringify({
     code,

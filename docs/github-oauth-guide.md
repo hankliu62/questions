@@ -200,7 +200,7 @@ vercel login
 vercel
 ```
 
-按照提示操作，部署完成后会得到一个 URL，如：`https://vercel-oauth-api.vercel.app`
+按照提示操作，部署完成后会得到一个 URL，如：`https://oauth-backend.vercel.app`
 
 ---
 
@@ -386,7 +386,7 @@ export default function OAuthCallback() {
       });
 
       // 使用 Vercel API 代理
-      const VERCEL_API_URL = 'https://vercel-oauth-api.vercel.app/api/oauth';
+      const VERCEL_API_URL = 'https://oauth-backend.vercel.app/api/oauth';
 
       const response = await fetch(VERCEL_API_URL, {
         method: 'POST',

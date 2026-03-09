@@ -41,6 +41,9 @@ if (isGithubActions) {
   // 这在将应用部署到子目录下时特别有用，因为它允许您指定应用所在的目录
   nextConfig.basePath = repo ? `/${repo}` : '';
   nextConfig.env.ROUTE_PREFIX = repo ? `/${repo}` : '';
+  nextConfig.env.OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID || '';
+  nextConfig.env.OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || '';
+  nextConfig.env.NEXT_PUBLIC_OAUTH_API = process.env.NEXT_PUBLIC_OAUTH_API || '';
 
   const {
     env: { FRONTEND_TOKEN, ...envs },
