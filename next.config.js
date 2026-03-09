@@ -46,7 +46,7 @@ if (isGithubActions) {
   nextConfig.env.NEXT_PUBLIC_OAUTH_API = process.env.NEXT_PUBLIC_OAUTH_API || '';
 
   const {
-    env: { FRONTEND_TOKEN, ...envs },
+    env: { FRONTEND_TOKEN, OAUTH_CLIENT_SECRET, ...envs },
     ...conf
   } = nextConfig;
   console.log('next config is:', { ...conf, env: { ...envs } });
