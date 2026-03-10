@@ -47,7 +47,7 @@ export default function GitHubLoginModal({
     const basePath = pathParts[0] === 'questions' ? '/questions' : '';
     const redirectUri = `${window.location.origin}${basePath}/oauth/callback`;
 
-    const scope = 'read:user user:email';
+    const scope = 'read:user user:email repo';
 
     // 构建授权 URL（包含 PKCE）
     const authUrl = new URL('https://github.com/login/oauth/authorize');

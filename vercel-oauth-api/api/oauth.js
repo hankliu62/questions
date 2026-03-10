@@ -42,9 +42,8 @@ export default async function handler(request, response) {
   }
 
   try {
-    // 解码 redirect_uri（前端已经编码过一次）
+    // 解码 redirect_uri
     const decodedRedirectUri = decodeURIComponent(redirect_uri);
-    console.log('Decoded redirect_uri:', decodedRedirectUri);
 
     // 发送到 GitHub 获取 token
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
@@ -55,6 +54,7 @@ export default async function handler(request, response) {
       },
       body: new URLSearchParams({
         client_id,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
         code,
         redirect_uri: decodedRedirectUri,
         code_verifier,
